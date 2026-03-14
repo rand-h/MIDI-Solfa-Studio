@@ -1,0 +1,352 @@
+:root {
+    --bg-dark: #09090b;       
+    --bg-panel: #18181b;      
+    --bg-hover: #27272a;
+    --border: #27272a;        
+    --border-highlight: #3f3f46;
+    --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    --accent-glow: rgba(139, 92, 246, 0.3);
+    --text: #e4e4e7;
+    --text-dim: #a1a1aa;
+    --success: #10b981;
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-dark); 
+    color: var(--text); 
+    height: 100vh; 
+    height: 100dvh; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+}
+
+/* --- NAVBAR --- */
+.navbar {
+    height: 64px;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    gap: 12px;
+    z-index: 100;
+    
+    /* Scroll Mobile */
+    overflow-x: auto; 
+    overflow-y: hidden;
+    white-space: nowrap; 
+    -webkit-overflow-scrolling: touch; 
+    scrollbar-width: none; 
+}
+.navbar::-webkit-scrollbar { display: none; }
+
+/* Empêcher l'écrasement */
+.nav-section, .brand, .btn, input, select { flex-shrink: 0; }
+
+/* --- MARQUE / LOGO --- */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espacement entre les logos */
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+/* 1. Style Solfa Studio */
+.brand-solfa {
+    font-weight: 700;
+    font-size: 18px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; /* Enlève le soulignement */
+}
+
+/* 2. Style Séparateur (X) */
+.brand-separator {
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.4;
+}
+
+/* 3. Style MIDIano (Premium Métallique) */
+.brand-midiano {
+    font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    text-decoration: none; /* Enlève le soulignement */
+    
+    /* Dégradé Blanc vers Violet */
+    background: linear-gradient(135deg, #ffffff 20%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+    /* Lueur */
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+    transition: opacity 0.2s;
+}
+
+.brand-midiano:hover, .brand-solfa:hover {
+    opacity: 0.8;
+}
+
+/* RESPONSIVE MOBILE : On cache le texte mais on garde l'essentiel */
+@media (max-width: 600px) {
+    .brand { gap: 8px; margin-right: 5px; }
+    
+    /* On cache le texte "Solfa Studio" mais on garde l'icône */
+    .brand-solfa { font-size: 0; gap: 0; }
+    .brand-solfa i { font-size: 20px; color: #8b5cf6; display: block; }
+    
+    .brand-separator { display: none; } /* On cache le X sur mobile */
+    .brand-midiano { display: none; } /* On cache MIDIano sur mobile pour gagner de la place */
+}
+
+.nav-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+}
+.nav-section:hover { border-color: var(--border-highlight); }
+
+.nav-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+/* --- CONTROLES DE VUE (ALIGNÉS A DROITE) --- */
+.view-controls {
+    margin-left: 0; /* Pousse ce bloc tout à droite */
+    display: flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* --- INPUTS --- */
+select, input {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+}
+select:focus, input:focus { border-color: #8b5cf6; }
+input[type=number] { width: 45px; text-align: center; font-weight: 600; }
+input[type=text] { width: 120px; }
+
+/* --- BOUTONS --- */
+.btn {
+    background: var(--bg-hover);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn:hover { background: #3f3f46; transform: translateY(-1px); }
+.btn:active { transform: scale(0.98); }
+
+.btn-icon:hover { color: white; background: var(--bg-hover); }
+
+/* Classe active pour les boutons de vue */
+.btn-icon.active { 
+    color: #8b5cf6; 
+    background: rgba(139, 92, 246, 0.15); 
+}
+
+/* Widget Transpose */
+.transpose-ui {
+    display: flex; align-items: center; gap: 2px;
+    background: var(--bg-dark); padding: 2px;
+    border-radius: 6px; border: 1px solid var(--border);
+}
+.t-btn {
+    width: 24px; height: 24px; border: none; background: transparent;
+    color: var(--text-dim); cursor: pointer; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+}
+.t-btn:hover { background: var(--bg-hover); color: white; }
+#transDisplay { font-weight: 700; color: #8b5cf6; width: 25px; text-align: center; }
+
+/* --- WORKSPACE --- */
+.workspace { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.sheet-panel { flex: 1; background: #fff; overflow: auto; position: relative; }
+#solfa-viewer { padding: 40px; max-width: 900px; margin: 0 auto; min-height: 100%; background: white;}
+#solfa-viewer svg { width: 100% !important; height: auto !important; }
+
+/* Resizer */
+.resizer {
+    height: 10px; background: var(--bg-dark);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    cursor: row-resize; display: flex; justify-content: center; align-items: center;
+    flex-shrink: 0;
+}
+.resizer::after { content: ""; width: 40px; height: 4px; background: var(--border-highlight); border-radius: 2px; }
+
+.midiano-panel { flex: 1; background: #000; position: relative; }
+iframe { width: 100%; height: 100%; border: none; display: block; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #555; gap: 20px; text-align: center; }
+.empty-icon { font-size: 50px; opacity: 0.3; color: #8b5cf6; }
+
+/* ========================================================= */
+/* GESTION DES VUES (C'EST ICI QUE CA SE JOUE)              */
+/* ========================================================= */
+
+/* Mode: Partition Seule */
+.workspace.full-sheet .midiano-panel,
+.workspace.full-sheet .resizer {
+    display: none !important;
+}
+.workspace.full-sheet .sheet-panel {
+    flex: 1 !important;
+    height: 100% !important;
+}
+
+/* Mode: Piano Seul */
+.workspace.full-midiano .sheet-panel,
+.workspace.full-midiano .resizer {
+    display: none !important;
+}
+.workspace.full-midiano .midiano-panel {
+    flex: 1 !important;
+    height: 100% !important;
+}
+
+/* Mode: Split (Défaut) */
+.workspace.split .sheet-panel,
+.workspace.split .midiano-panel {
+    display: block; 
+}
+
+/* ========================================================= */
+
+/* Toast */
+#toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: rgba(24, 24, 27, 0.95); border: 1px solid var(--border);
+    color: white; padding: 12px 20px; border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(100px); opacity: 0; transition: all 0.3s;
+    z-index: 9999;
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.success { border-left: 4px solid var(--success); }
+#toast.error { border-left: 4px solid #ef4444; }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .nav-label { display: none; } 
+    .navbar { gap: 8px; }
+}
+
+@media (max-width: 600px) {
+    .navbar { padding: 0 10px; height: 56px; }
+    .brand { font-size: 0; margin-right: 5px; } 
+    .brand i { font-size: 20px; color: #8b5cf6; } 
+
+    .btn { font-size: 0 !important; padding: 8px; gap: 0; }
+    .btn i, .btn .fas { font-size: 16px !important; }
+    
+    input[type=text] { width: 100px; } 
+    #solfa-viewer { padding: 15px; }
+    #toast { left: 10px; right: 10px; bottom: 10px; justify-content: center; }
+}
+
+/* --- BOUTONS ICONES SEULES (VUES) --- */
+.btn-icon { 
+    padding: 8px; 
+    color: var(--text-dim); 
+    border: none; 
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 30px;
+    
+    /* AJOUT IMPORTANT : Force la taille de l'icône */
+    font-size: 18px !important; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover { 
+    color: white; 
+    background: var(--bg-hover); 
+}
+
+.btn-icon.active { 
+    color: #8b5cf6; 
+    background: rgba(139, 92, 246, 0.15); 
+}
+
+
+
+
+
+/* --- NAVBAR --- */
+.navbar {
+    height: auto; /* Permet à la barre de grandir */
+    min-height: 64px;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap; /* Autorise les éléments à passer à la ligne en dessous */
+    align-items: center;
+    padding: 10px 15px;
+    gap: 12px;
+    z-index: 100;
+}
+/* Tu peux supprimer la ligne ".navbar::-webkit-scrollbar { display: none; }" qui n'est plus utile */
+
+/* --- CONTROLES DE VUE --- */
+.view-controls {
+    margin-left: auto; /* Pousse ce bloc tout à droite de sa ligne */
+    display: flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* Ce bloc que tu as déjà est PARFAIT, il ne faut pas y toucher */
+@media (max-width: 900px) {
+    .brand { gap: 8px; margin-right: 5px; }
+    
+    /* On cache le texte "Solfa Studio" mais on garde l'icône */
+    .brand-solfa { font-size: 0; gap: 0; }
+    .brand-solfa i { font-size: 20px; color: #8b5cf6; display: block; }
+    
+    .brand-separator { display: none; } 
+    .brand-midiano { display: none; } 
+    /* ... la suite de tes règles mobiles ... */
+}
