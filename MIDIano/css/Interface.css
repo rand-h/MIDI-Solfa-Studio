@@ -1,0 +1,203 @@
+:root {
+    /* --- PALETTE SOLFA STUDIO --- */
+    --bg-dark: #09090b;       /* Noir profond */
+    --bg-panel: #18181b;      /* Gris zinc */
+    --bg-hover: #27272a;      /* Survol */
+    --border: #27272a;        /* Bordure */
+    --border-highlight: #3f3f46;
+
+    --text: #e4e4e7;          /* Texte clair */
+    --text-dim: #a1a1aa;      /* Texte tamisé */
+
+    /* Couleurs d'accentuation */
+    --accent: #8b5cf6;        /* Violet */
+    --accent-glow: rgba(139, 92, 246, 0.3);
+    
+    /* Couleurs Fonctionnelles */
+    --playColor: #2ecc71;
+    --stopColor: #e74c3c;
+    --pauseColor: #f1c40f;
+}
+
+html,
+body {
+    font-family: "Source Sans Pro", sans-serif !important;
+    color: var(--fontColor);
+    width: 100%; height: 100%; min-height: 100%;
+}
+body {
+    overflow-y: hidden; overflow-x: auto; margin: 0; padding: 0;
+    background-color: var(--bg-dark);
+}
+
+.pcr-app:not(.visible) { display: none; }
+
+/* =========================================
+   1. BARRE DE NAVIGATION
+   ========================================= */
+.navbar {
+    box-sizing: border-box;
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    position: absolute; top: 0; left: 0; width: 100%; height: 50px;
+    z-index: 1000;
+    display: flex; align-items: center; padding: 0 15px;
+}
+
+
+/* =========================================
+   2. LAYOUT
+   ========================================= */
+.container {
+    width: 100% !important;
+    display: flex; justify-content: space-between; align-items: center; padding: 0;
+}
+
+.topContainer {
+    display: flex; align-items: center; gap: 12px;
+}
+.topContainer:first-child { margin-right: auto; }
+.topContainer:last-child { margin-left: auto; }
+
+.btn-group, .btn-group-vertical {
+    display: flex; flex-direction: row; align-items: center; gap: 6px; float: none !important;
+}
+
+/* =========================================
+   3. BOUTONS
+   ========================================= */
+.btn {
+    position: relative; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    height: 34px; padding: 0 12px; font-size: 14px;
+    color: var(--text-dim);
+    background-color: transparent;
+    outline: none;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease; user-select: none;
+}
+.btn:hover {
+    background-color: var(--bg-hover); color: var(--text); border-color: var(--border-highlight);
+}
+.btn:active, .btn.active {
+    background-color: var(--accent-glow); color: var(--accent); border-color: var(--accent);
+    transform: scale(0.98);
+}
+
+#play span { color: var(--playColor); font-size: 1.1em; }
+#stop span { color: var(--stopColor); }
+#pause span { color: var(--pauseColor); }
+.btn-lg { font-size: 1.3em; width: 44px; }
+
+.forcedThinButton {
+    width: 40px !important; height: 28px !important;
+    background: var(--bg-dark) !important; color: var(--accent) !important;
+    border: 1px solid var(--border) !important;
+    font-weight: bold !important; border-radius: 6px; text-align: center;
+}
+
+/* =========================================
+   4. SLIDERS (VOLUME) - STYLE JAUGE
+   ========================================= */
+.sliderContainer {
+    display: flex; flex-direction: column; align-items: center;
+    margin: 0 10px; justify-content: center;
+}
+
+.sliderLabel {
+    color: #ffffff; font-size: 9px; text-transform: uppercase;
+    font-weight: 800; margin-bottom: -6px; letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+#volumeMainlabel { color: white; font-size: 8px !important; }
+
+input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100px; height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow: hidden; margin: 0; cursor: pointer;
+}
+input[type="range"]:focus { outline: none; border-color: var(--accent); }
+
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%; height: 100%; background: transparent; border-radius: 10px; border: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 0px; height: 12px;
+    box-shadow: -400px 0 0 400px var(--accent); 
+    background: transparent; cursor: pointer; border: none;
+}
+
+input[type="range"]::-moz-range-track {
+    width: 100%; height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; border: none;
+}
+input[type="range"]::-moz-range-progress {
+    background-color: var(--accent); height: 12px; border-radius: 10px 0 0 10px;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px; background: #fff; border: none; border-radius: 50%; cursor: pointer;
+}
+
+/* =========================================
+   5. DIVERS
+   ========================================= */
+.btn-file { display: none !important; }
+.topContainer:first-child .btn-group-vertical button#mute { display: none !important; }
+.btn-select-line { display: none !important; }
+canvas { z-index: -5; }
+
+.innerMenuDiv {
+    margin-top: 55px; position: absolute; box-sizing: border-box; pointer-events: all; z-index: 100;
+    width: 30%; height: calc(100% - 60px); min-width: 300px; right: 0px; padding: 10px;
+    background-color: var(--bg-dark); box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+    overflow-y: auto; overflow-x: hidden; border-left: 1px solid var(--border);
+}
+.innerMenuContDiv {
+    background-color: var(--bg-panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px;
+}
+.clickableTitle:hover { background-color: var(--bg-hover); }
+.divider { border: 0; border-bottom: 1px solid var(--border); margin: 5px 0; }
+.row { display: flex; justify-content: space-between; }
+.floatSpanLeft span { float: left; margin-right: 5px; }
+.hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+.unhidden { visibility: visible; opacity: 1; }
+
+/* =========================================
+   6. BARRE DE PROGRESSION (Récupérée & Stylisée)
+   ========================================= */
+#progressBarCanvas {
+    /* Positionnement en bas de la navbar */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    
+    /* Hauteur de la zone cliquable */
+    height: 18px; 
+    box-sizing: border-box;
+
+    /* Style visuel */
+    background-color: rgba(0, 0, 0, 0.3); /* Fond sombre discret */
+    border-bottom: 2px solid var(--accent); /* La ligne de progression en Violet */
+    color: white;
+    /* Comportement */
+    cursor: pointer;
+    z-index: 2000; /* Au-dessus de tout le reste */
+    transition: all 0.2s ease-out;
+}
+
+/* Effet au survol pour montrer que c'est cliquable */
+#progressBarCanvas:hover {
+    height: 16px; /* S'agrandit un peu */
+    background-color: rgba(139, 92, 246, 0.2); /* Lueur violette */
+}
+
+.zoomGroup {
+    position: absolute;
+    top: 130px;
+}
