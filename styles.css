@@ -350,3 +350,72 @@ iframe { width: 100%; height: 100%; border: none; display: block; }
     .brand-midiano { display: none; } 
     /* ... la suite de tes règles mobiles ... */
 }
+
+
+
+/* --- WORKSPACE --- */
+.workspace { 
+    display: flex; 
+    flex: 1; 
+    overflow: hidden; 
+    /* Par défaut sur mobile/tablette : empilé de haut en bas */
+    flex-direction: column; 
+}
+
+/* Sur les GRANDS écrans (ex: > 1024px) 
+  On passe en mode horizontal (gauche/droite)
+*/
+@media (min-width: 1024px) {
+    .workspace {
+        flex-direction: row;
+    }
+}
+
+/* Resizer */
+.resizer {
+    height: 10px; background: var(--bg-dark);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    cursor: row-resize; display: flex; justify-content: center; align-items: center;
+    flex-shrink: 0;
+}
+.resizer::after { content: ""; width: 40px; height: 4px; background: var(--border-highlight); border-radius: 2px; }
+
+
+/* Resizer (Par défaut: Horizontal pour les petits écrans) */
+.resizer {
+    height: 10px; 
+    width: 100%;
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border); 
+    border-bottom: 1px solid var(--border);
+    cursor: row-resize; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    flex-shrink: 0;
+}
+.resizer::after { 
+    content: ""; 
+    width: 40px; 
+    height: 4px; 
+    background: var(--border-highlight); 
+    border-radius: 2px; 
+}
+
+/* Resizer (Pour les grands écrans: Vertical) */
+@media (min-width: 1024px) {
+    .resizer {
+        height: 100%; 
+        width: 10px;
+        border-top: none;
+        border-bottom: none;
+        border-left: 1px solid var(--border); 
+        border-right: 1px solid var(--border);
+        cursor: col-resize; /* Curseur gauche/droite */
+        flex-direction: column; /* Le petit trait décoratif tourne à 90° */
+    }
+    .resizer::after { 
+        width: 4px; 
+        height: 40px; 
+    }
+}

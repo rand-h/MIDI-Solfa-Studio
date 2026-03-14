@@ -407,6 +407,46 @@
 
     document.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
+        
+        // On vérifie si on est en mode "colonne" (petit écran) ou "ligne" (grand écran)
+        const isHorizontalLayout = window.innerWidth >= 1024;
+
+        if (isHorizontalLayout) {
+            // --- MODE GRAND ÉCRAN (GAUCHE / DROITE) ---
+            const containerWidth = workspace.offsetWidth;
+            let newWidthPercent = (e.clientX) / containerWidth * 100; 
+            
+            // Limites pour ne pas écraser les panneaux
+            if (newWidthPercent < 20) newWidthPercent = 20; 
+            if (newWidthPercent > 80) newWidthPercent = 80;
+
+            sheetPanel.style.flex = `0 0 ${newWidthPercent}%`;
+            midianoPanel.style.flex = `1 1 auto`;
+            
+            // On nettoie la hauteur forcée par le mode mobile
+            sheetPanel.style.height = '100%'; 
+
+        } else {
+            // --- MODE PETIT ÉCRAN (HAUT / BAS) ---
+            const containerHeight = workspace.offsetHeight;
+            let navHeight = document.querySelector('.navbar').offsetHeight; // Calcul dynamique
+            
+            let newHeightPercent = (e.clientY - navHeight) / containerHeight * 100;
+            
+            if (newHeightPercent < 20) newHeightPercent = 20;
+            if (newHeightPercent > 80) newHeightPercent = 80;
+
+            sheetPanel.style.flex = `0 0 ${newHeightPercent}%`;
+            midianoPanel.style.flex = `1 1 auto`;
+            
+            // On nettoie la largeur forcée par le mode desktop
+            sheetPanel.style.width = '100%'; 
+        }
+    });
+
+    /*/
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
         const containerHeight = workspace.offsetHeight;
         // Calcul du pourcentage (borné entre 10% et 90%)
         let newHeightPercent = (e.clientY - 64) / containerHeight * 100; // 64 = hauteur navbar
@@ -416,6 +456,7 @@
         sheetPanel.style.flex = `0 0 ${newHeightPercent}%`;
         midianoPanel.style.flex = `1 1 auto`; // Le reste pour MIDIano
     });
+    /*/
 
     document.addEventListener('mouseup', () => {
         if(isResizing) {
@@ -450,3 +491,76 @@
     // REMPLACEZ VOS showToast() PAR showToast() DANS VOTRE CODE :
     // Exemple : showToast("Partition chargée !", "success");
     // Exemple : showToast("Erreur de chargement", "error");
+    
+document.addEventListener("DOMContentLoaded", () => {
+    // On lit les paramètres dans l'URL (ce qu'il y a après le '?')
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // ==========================================
+    // 1. GESTION DE : ?play=chant-numero
+    // ==========================================
+    const playParam = urlParams.get('play');
+    if (playParam) {
+        // Vérifie le format exact (ex: ffpm-12)
+        const match = playParam.match(/^(ffpm|ff|antema|tsanta)-([1-9][0-9]{0,2})$/i);
+        
+        if (match) {
+            const recueil = match[1].toLowerCase(); // ex: "ffpm"
+            const numero = match[2];                // ex: "12"
+            
+            console.log(`▶️ Chargement auto : ${recueil} n°${numero}`);
+            showToast(`Chargement de ${recueil.toUpperCase()} ${numero}...`, "success");
+            
+            // ASTUCE : On remplit vos inputs HTML invisibles ou visibles
+            const typeSelect = document.getElementById('typeSelect');
+            const numInput = document.getElementById('numInput');
+            const loadAndPlay = document.getElementById('load-and-play');
+            
+            if (typeSelect && numInput && loadAndPlay) {
+                typeSelect.value = recueil;
+                numInput.value = numero;
+                
+                const midianoFrame = document.getElementById('midianoFrame');
+                
+                // On vérifie que l'iframe existe bien sur la page
+                if (midianoFrame) {
+                    // On déclenche le clic UNIQUEMENT quand l'iframe a fini de charger
+                    midianoFrame.addEventListener('load', () => {
+                        console.log("✅ MIDIano est prêt, lancement de la lecture auto !");
+                        
+                        setTimeout(() => {
+                            loadAndPlay.click();
+                        }, 2000);
+                    });
+                } else {
+                    // Sécurité de secours au cas où l'iframe n'est pas trouvé
+                    window.addEventListener('load', () => {
+                        setTimeout(() => {
+                            loadAndPlay.click();
+                        }, 2000);
+                    });
+                }
+            }
+        } else {
+            showToast("Lien de chant invalide", "error");
+        }
+    }
+
+    // ==========================================
+    // 2. GESTION DE : ?link=url-du-pdf
+    // ==========================================
+    const linkParam = urlParams.get('link');
+    if (linkParam) {
+        console.log(`📄 Chargement PDF auto : ${linkParam}`);
+        showToast("Chargement du document...", "success");
+        
+        const urlInput = document.getElementById('urlInput');
+        if(urlInput) {
+            // On remplit votre input URL
+            urlInput.value = linkParam;
+            
+            // On déclenche VOTRE fonction
+            handleUrlImport();
+        }
+    }
+});
