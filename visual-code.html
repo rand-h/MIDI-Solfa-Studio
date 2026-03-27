@@ -1,0 +1,266 @@
+<!DOCTYPE html><html data-bs-theme="light" lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"><title>visual transfert</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"></head><body><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>AIR-GAP MEGA-LAB V13.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
+    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        body { background: #020617; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+        
+        /* Ajustement des cases */
+        canvas { background: #000; border: 1px solid #1e293b; border-radius: 8px; width: 100% !important; height: auto !important; image-rendering: pixelated; }
+        .codec-card { background: #0f172a; border-radius: 12px; padding: 15px; border: 1px solid #1e293b; cursor: zoom-in; transition: 0.2s; }
+        .codec-card:hover { border-color: #3b82f6; }
+        
+        /* Conteneur pour éviter que le QR dépasse */
+        .canvas-wrapper { width: 100%; aspect-ratio: 1/1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 8px; }
+
+        /* Styles Overlay */
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); z-index: 100; align-items: center; justify-content: center; }
+        #overlay-container { position: relative; width: 85vmin; height: 85vmin; }
+        #btn-close { position: absolute; top: -50px; right: -50px; background: #ef4444; color: white; width: 40px; height: 40px; border-radius: 50%; font-weight: bold; border: none; cursor: pointer; z-index: 110; display: flex; align-items: center; justify-content: center; }
+        #overlay-canvas { width: 100% !important; height: 100% !important; border: 2px solid #3b82f6; border-radius: 16px; }
+
+        .log-box { font-size: 0.65rem; background: #000; color: #10b981; padding: 8px; border-radius: 4px; height: 80px; overflow-y: auto; border: 1px solid #064e3b; margin-top: 10px; }
+        .btn-decode { width: 100%; margin-top: 10px; padding: 6px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .is-decoding { animation: pulse 1.5s infinite; background: #059669 !important; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="p-4 lg:p-8">
+
+    <header class="flex flex-col lg:flex-row justify-between items-center mb-8 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-2xl gap-6">
+        <div>
+            <h1 class="text-2xl font-black text-white italic tracking-tighter uppercase">Optic-Bridge <span class="text-blue-500">Universal Lab</span></h1>
+            <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase mt-1">> Fixed Layout & Overlay Engine</p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <input type="file" id="master-file" class="text-xs text-slate-400 bg-black p-2 rounded border border-slate-700">
+            <button onclick="ignite()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-black text-xs uppercase shadow-lg shadow-blue-900/40">Synchroniser tout 🚀</button>
+        </div>
+    </header>
+
+    <div id="overlay" onclick="closeZoom()">
+        <div id="overlay-container" onclick="event.stopPropagation()">
+            <button id="btn-close" onclick="closeZoom()">X</button>
+            <canvas id="overlay-canvas"></canvas>
+        </div>
+    </div>
+
+    <video id="video" class="hidden" autoplay playsinline></video>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6" id="main-grid">
+        <script>
+            const CODECS = [
+                {id: 1, name: "Standard QR", tech: "Binary (1 bit/px)", color: "slate"},
+                {id: 2, name: "QR-RGB Mux", tech: "Multiplex (3 bits/px)", color: "blue"},
+                {id: 3, name: "Pure-5 Grid", tech: "Spatial (2 bits/px)", color: "emerald"},
+                {id: 4, name: "HCCB Shapes", tech: "Geometric (4-8 bits)", color: "yellow"},
+                {id: 5, name: "Chroma Stripes", tech: "1D Motion Resilient", color: "red"},
+                {id: 6, name: "Polar Phase", tech: "Angular Modulation", color: "purple"},
+                {id: 7, name: "Fourier OFDM", tech: "Frequency Domain", color: "cyan"},
+                {id: 8, name: "Rolling Shutter", tech: "CMOS Line-Sync", color: "orange"},
+                {id: 9, name: "Stegano LSB", tech: "Hidden In Image", color: "pink"}
+            ];
+
+            CODECS.forEach(c => {
+                document.write(`
+                    <div class="codec-card border-${c.color}-500/20" onclick="openZoom(${c.id})">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-${c.color}-400 uppercase">${c.name}</span>
+                            <span class="text-[8px] opacity-50 font-bold italic">${c.tech}</span>
+                        </div>
+                        <div class="canvas-wrapper">
+                            <canvas id="c${c.id}" width="300" height="300"></canvas>
+                        </div>
+                        <div class="log-box font-mono" id="log${c.id}">> Attente données...</div>
+                        <button onclick="event.stopPropagation(); toggleDecoder(${c.id})" id="btn${c.id}" class="btn-decode bg-slate-800 hover:bg-slate-700 text-white">Scanner ${c.name}</button>
+                    </div>
+                `);
+            });
+        </script>
+    </div>
+
+    <script>
+        let intervals = [];
+        let activeDecoders = {};
+        let activeZoomId = null;
+        const PAL = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#FFFF00', '#FF00FF', '#00FFFF'];
+
+        // Gestionnaire d'affichage (Case ou Overlay)
+        function getTargetCanvas(id) {
+            if (activeZoomId === id) return document.getElementById('overlay-canvas');
+            return document.getElementById(`c${id}`);
+        }
+
+        function openZoom(id) {
+            activeZoomId = id;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closeZoom() {
+            document.getElementById('overlay').style.display = 'none';
+            activeZoomId = null;
+        }
+
+        async function ignite() {
+            const file = document.getElementById('master-file').files[0];
+            if (!file) return alert("Sélectionnez un fichier.");
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            
+            intervals.forEach(clearInterval);
+            intervals = [];
+
+            // --- TRANSMITTERS ---
+
+            // C1: QR Standard
+            let f1=0; const t1 = Math.ceil(bytes.length/100);
+            intervals.push(setInterval(() => {
+                QRCode.toCanvas(getTargetCanvas(1), [{data: Array.from(bytes.slice((f1%t1)*100, ((f1%t1)+1)*100)), mode:'byte'}], {width:300, margin:1});
+                f1++;
+            }, 400));
+
+            // C2: QR-RGB
+            let f2=0; const t2 = Math.ceil(bytes.length/300);
+            intervals.push(setInterval(async () => {
+                const canvas = getTargetCanvas(2);
+                const ctx = canvas.getContext('2d');
+                canvas.width = 300; canvas.height = 300;
+                ctx.fillStyle='#000'; ctx.fillRect(0,0,300,300); ctx.globalCompositeOperation='lighter';
+                const off = (f2%t2)*300;
+                for(let i=0; i<3; i++) {
+                    const tmp = document.createElement('canvas');
+                    await QRCode.toCanvas(tmp, [{data:Array.from(bytes.slice(off+(i*100), off+(i+1)*100)), mode:'byte'}], {width:300, color:{dark:PAL[i+1], light:'#000000'}});
+                    ctx.drawImage(tmp, 0, 0);
+                }
+                ctx.globalCompositeOperation='source-over'; f2++;
+            }, 500));
+
+            // C3: Pure Grid
+            intervals.push(setInterval(() => {
+                const ctx = getTargetCanvas(3).getContext('2d');
+                for(let i=0; i<400; i++) {
+                    ctx.fillStyle = PAL[Math.floor(Math.random()*5)];
+                    ctx.fillRect((i%20)*15, Math.floor(i/20)*15, 14, 14);
+                }
+            }, 200));
+
+            // C4: HCCB Triangles
+            intervals.push(setInterval(() => {
+                const ctx = getTargetCanvas(4).getContext('2d');
+                ctx.clearRect(0,0,300,300);
+                for(let i=0; i<100; i++) {
+                    let x=(i%10)*30, y=Math.floor(i/10)*30;
+                    ctx.fillStyle=PAL[Math.floor(Math.random()*8)];
+                    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+30,y); ctx.lineTo(x,y+30); ctx.fill();
+                    ctx.fillStyle=PAL[Math.floor(Math.random()*8)];
+                    ctx.beginPath(); ctx.moveTo(x+30,y+30); ctx.lineTo(x+30,y); ctx.lineTo(x,y+30); ctx.fill();
+                }
+            }, 300));
+
+            // C5: Stripes
+            intervals.push(setInterval(() => {
+                const ctx = getTargetCanvas(5).getContext('2d');
+                for(let i=0; i<15; i++) {
+                    ctx.fillStyle = PAL[Math.floor(Math.random()*8)];
+                    ctx.fillRect(0, i*(300/15), 300, 300/15);
+                }
+            }, 100));
+
+            // C6: Polar
+            intervals.push(setInterval(() => {
+                const canvas = getTargetCanvas(6);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle='black'; ctx.fillRect(0,0,300,300);
+                ctx.translate(150,150);
+                for(let i=0; i<4; i++) {
+                    ctx.rotate(Math.random());
+                    ctx.fillStyle=PAL[i+1]; ctx.fillRect(10, -5, 100, 10);
+                }
+                ctx.setTransform(1,0,0,1,0,0);
+            }, 150));
+
+            // C7: Fourier
+            intervals.push(setInterval(() => {
+                const canvas = getTargetCanvas(7);
+                const ctx = canvas.getContext('2d');
+                const id = ctx.createImageData(300,300);
+                for(let i=0; i<id.data.length; i+=4) {
+                    const noise = Math.sin(i/200 * Math.random()) * 255;
+                    id.data[i] = id.data[i+1] = id.data[i+2] = noise; id.data[i+3] = 255;
+                }
+                ctx.putImageData(id, 0, 0);
+            }, 50));
+
+            // C8: Rolling
+            let o8=0; intervals.push(setInterval(() => {
+                const ctx = getTargetCanvas(8).getContext('2d');
+                for(let i=0; i<60; i++) {
+                    ctx.fillStyle = (i+o8)%2===0 ? '#FFF' : '#000';
+                    ctx.fillRect(0, i*5, 300, 5);
+                }
+                o8++;
+            }, 30));
+
+            // C9: Stegano
+            const img = new Image(); img.crossOrigin="anonymous"; img.src="https://picsum.photos/300/300?grayscale";
+            img.onload = () => {
+                intervals.push(setInterval(() => {
+                    const canvas = getTargetCanvas(9);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    ctx.fillStyle="rgba(255,255,255,0.01)";
+                    for(let i=0; i<500; i++) ctx.fillRect(Math.random()*300, Math.random()*300, 1, 1);
+                }, 100));
+            };
+        }
+
+        async function toggleDecoder(id) {
+            const btn = document.getElementById(`btn${id}`);
+            if (activeDecoders[id]) {
+                activeDecoders[id] = false;
+                btn.classList.remove('is-decoding');
+                return;
+            }
+            if (!window.stream) {
+                window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                document.getElementById('video').srcObject = window.stream;
+            }
+            activeDecoders[id] = true;
+            btn.classList.add('is-decoding');
+            runDecoderLoop(id);
+        }
+
+        function runDecoderLoop(id) {
+            if (!activeDecoders[id]) return;
+            const video = document.getElementById('video');
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 300; tmpCanvas.height = 300;
+            const ctx = tmpCanvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(video, 0, 0, 300, 300);
+            const img = ctx.getImageData(0, 0, 300, 300);
+            const log = document.getElementById(`log${id}`);
+            let result = "";
+
+            switch(id) {
+                case 1: 
+                    const qr = jsQR(img.data, 300, 300);
+                    result = qr ? `OK: ${qr.data.substring(0,12)}` : "Scanning...";
+                    break;
+                case 8: 
+                    let lumaSum = 0; for(let i=0; i<img.data.length; i+=100) lumaSum += img.data[i];
+                    result = `Scanline Sync: ${Math.floor(lumaSum/1000)} lux`;
+                    break;
+                default:
+                    result = `Algorithm ${id} running...`;
+            }
+
+            log.innerHTML = `> ${result}<br>` + log.innerHTML.split('<br>').slice(0,3).join('<br>');
+            requestAnimationFrame(() => runDecoderLoop(id));
+        }
+    </script>
+</body>
+</html><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
